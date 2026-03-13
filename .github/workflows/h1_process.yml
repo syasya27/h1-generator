@@ -1,0 +1,40 @@
+name: H1 Processing
+
+on:
+  workflow_dispatch:
+
+jobs:
+  process-h1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run H1 processor
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: gpt-5-mini
+          INPUT_CSV: data/h1_input.csv
+          OUTPUT_CSV: data/h1_output.csv
+          CHECKPOINT_DIR: data/checkpoints
+          CONCURRENCY: 50
+          SAVE_EVERY: 500
+        run: python scripts/process_h1.py
+
+      - name: Upload output artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: h1-output
+          path: |
+            data/h1_output.csv
+            data/checkpoints/
